@@ -1,0 +1,332 @@
+/*
+ * Global stylesheet for the whole site (imported once by Base.astro).
+ * Dark mode only. Fonts are loaded by Base.astro, not here.
+ * Rule: --accent is never a text color; it is for borders, fills,
+ * shadows, dividers, the cursor, link underlines, and focus rings.
+ */
+
+:root {
+  color-scheme: dark;
+
+  --bg: #0e0e13;
+  --surface: #17171f;
+  --text-heading: #f2f0f5;
+  --text: #d9d6de;
+  --text-muted: #a9a5b3;
+  --accent: #7844b8;
+
+  --font-pixel: "Pixelify Sans", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --measure: 68ch;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 2rem;
+  --space-5: 4rem;
+
+  --border: 2px;
+  --shadow: 4px;
+  --speed: 0.15s;
+
+  /* Four zero-blur layers draw a 2px border but leave each corner
+     unpainted, giving a notched "pixel" corner. Used instead of
+     clip-path so the hover shadow below is not clipped away. */
+  --pixel-border:
+    calc(-1 * var(--border)) 0 0 var(--accent),
+    var(--border) 0 0 var(--accent),
+    0 calc(-1 * var(--border)) 0 var(--accent),
+    0 var(--border) 0 var(--accent);
+  /* Offset is border + shadow so the block sticks out past the border. */
+  --pixel-shadow: calc(var(--border) + var(--shadow)) calc(var(--border) + var(--shadow)) 0 var(--accent);
+}
+
+/* Base elements */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Keeps anchor targets clear of the sticky nav. */
+  scroll-padding-top: var(--space-5);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  /* Long URLs and words must not cause horizontal scroll at 320px.
+     "anywhere" (unlike break-word) also lowers min-content width, so
+     a long word can't widen a grid or flex child past the viewport. */
+  overflow-wrap: anywhere;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--text-heading);
+  line-height: 1.2;
+}
+
+h2 {
+  font-family: var(--font-pixel);
+}
+
+a {
+  color: var(--text-heading);
+  text-decoration: underline var(--accent) var(--border);
+  text-underline-offset: 0.2em;
+  transition: text-decoration-thickness var(--speed);
+}
+
+a:hover {
+  text-decoration-thickness: var(--shadow);
+}
+
+:focus-visible {
+  outline: var(--border) solid var(--accent);
+  /* Double the border width so the ring clears the pixel border. */
+  outline-offset: calc(2 * var(--border));
+}
+
+hr {
+  border: 0;
+  border-top: var(--border) solid var(--accent);
+  margin-block: var(--space-4);
+}
+
+code,
+pre,
+.mono {
+  font-family: var(--font-mono);
+}
+
+pre {
+  overflow-x: auto;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Layout */
+
+.skip-link {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 2;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  transform: translateY(-300%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg);
+  border-bottom: var(--border) solid var(--accent);
+}
+
+.site-nav ul,
+.button-row,
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.site-nav ul {
+  gap: var(--space-2) var(--space-3);
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-3);
+  list-style: none;
+}
+
+.site-nav a {
+  font-family: var(--font-pixel);
+}
+
+.container {
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding-inline: var(--space-3);
+}
+
+.section {
+  padding-block: var(--space-4);
+}
+
+.hero {
+  padding-block: var(--space-5) var(--space-4);
+}
+
+.hero-name {
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  line-height: 1.1;
+}
+
+.cursor {
+  display: inline-block;
+  width: 0.5em;
+  height: 0.9em;
+  margin-left: 0.1em;
+  vertical-align: -0.05em;
+  background: var(--accent);
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Buttons and cards */
+
+.button-row {
+  gap: var(--space-3);
+}
+
+.button {
+  display: inline-block;
+  padding: var(--space-2) var(--space-3);
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+}
+
+.button,
+.card {
+  box-shadow: var(--pixel-border);
+  transition: box-shadow var(--speed);
+}
+
+.button:hover,
+.button:focus-visible,
+.card:hover,
+.card:focus-within {
+  box-shadow: var(--pixel-border), var(--pixel-shadow);
+}
+
+.card-list,
+.tags,
+.timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card-list,
+.timeline {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.card {
+  padding: var(--space-3);
+  background: var(--surface);
+}
+
+.card > :first-child {
+  margin-top: 0;
+}
+
+.card > :last-child {
+  margin-bottom: 0;
+}
+
+.tags {
+  gap: var(--space-2);
+}
+
+.tag {
+  padding: 0 var(--space-2);
+  border: var(--border) solid var(--accent);
+  color: var(--text-heading);
+  font-family: var(--font-pixel);
+  font-size: 0.8rem;
+}
+
+/* Timeline */
+
+.timeline {
+  border-left: var(--border) solid var(--accent);
+}
+
+.timeline-item {
+  padding-left: var(--space-3);
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.timeline-meta {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+/* Project pages */
+
+.prose h2 {
+  margin-top: var(--space-4);
+}
+
+.prose :is(p, ul, pre, img) {
+  margin-block: 0 var(--space-3);
+}
+
+.prose li + li {
+  margin-top: var(--space-1);
+}
+
+.prose pre {
+  padding: var(--space-3);
+  background: var(--surface);
+}
+
+.prose :not(pre) > code {
+  padding: 0 var(--space-1);
+  background: var(--surface);
+}
+
+.prose img {
+  display: block;
+}
+
+.back-link {
+  display: inline-block;
+  margin-block: var(--space-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .cursor {
+    animation: none;
+  }
+
+  a,
+  .button,
+  .card {
+    transition: none;
+  }
+}
