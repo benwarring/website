@@ -1,0 +1,21 @@
+---
+/**
+ * Home route. Loads the projects collection, sorted by `order`, and hands
+ * plain objects to the Home page component inside the Base shell.
+ */
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Home from '../components/Home.jsx';
+
+const projects = (await getCollection('projects'))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map(({ id, data: { title, summary, tags } }) => ({ id, title, summary, tags }));
+---
+
+<Base
+  title="Benjamin Warring"
+  description="Benjamin Warring is a Computer Science student at Bucknell University. Projects, experience and contact details."
+>
+  {/* Hydrated on purpose so React Bits (animated React) components can be added to Home.jsx later. */}
+  <Home client:load projects={projects} />
+</Base>
