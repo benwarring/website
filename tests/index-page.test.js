@@ -26,14 +26,27 @@ test('the global stylesheet reaches the page', () => {
   assert.ok(linked || inlined, 'no /website/ stylesheet link and no inlined global CSS');
 });
 
-test('project cards come from the collection, sorted by order', () => {
-  const links = [...html.matchAll(/<li class="card"><h3><a href="([^"]+)">([^<]+)<\/a>/g)]
-    .map(([, href, title]) => [title, href]);
-  assert.deepEqual(links, [
-    ['bIDE', '/website/projects/bide/'],
-    ['ReGen', '/website/projects/regen/'],
-    ['DocuGen', '/website/projects/docugen/'],
-  ]);
+test('folders show exactly the first three projects by order, then More', () => {
+  const folders = html.match(/<ul class="folders">[\s\S]*?<\/ul>/)?.[0] ?? '';
+  const labels = [...folders.matchAll(/<span class="folder-label">([^<]+)<\/span>/g)].map((m) => m[1]);
+  assert.deepEqual(labels, ['bIDE', 'ReGen', 'DocuGen', 'More']);
+  const controls = [...folders.matchAll(/<button[^>]*aria-controls="([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(controls, ['paper-bide', 'paper-regen', 'paper-docugen']);
+  assert.match(folders, /<a class="folder" href="\/website\/projects\/">/);
+});
+
+test('each featured paper links to its project page; no other project is featured', () => {
+  const papers = [...html.matchAll(/<article id="paper-([^"]+)"[\s\S]*?<\/article>/g)];
+  assert.deepEqual(papers.map((m) => m[1]), ['bide', 'regen', 'docugen']);
+  for (const [paper, id] of papers) {
+    // Hydratable output separates adjacent text nodes with <!-- -->.
+    assert.match(paper, new RegExp(`<a href="/website/projects/${id}/">Read more about (?:<!-- -->)?[^<]+</a>`));
+  }
+});
+
+test('the About section is gone', () => {
+  assert.doesNotMatch(html, /id="about"/);
+  assert.doesNotMatch(html, /href="[^"]*#about"/);
 });
 
 test('the Home component is hydrated on load', () => {
