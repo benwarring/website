@@ -24,13 +24,16 @@ test('imports the global stylesheet', () => {
   assert.match(frontmatter, /^\s*import\s+['"]\.\.\/styles\/global\.css['"]\s*;?/m);
 });
 
-test('loads all three Google Fonts families with display=swap', () => {
+test('loads Roboto Serif, Montserrat and JetBrains Mono with display=swap', () => {
   const href = template.match(/<link\s+rel="stylesheet"\s+href="(https:\/\/fonts\.googleapis\.com\/css2\?[^"]+)"/);
-  assert.ok(href, 'no fonts.googleapis.com/css2 stylesheet link');
-  for (const family of ['Pixelify+Sans', 'Inter', 'JetBrains+Mono']) {
-    assert.match(href[1], new RegExp(`[?&]family=${family.replace('+', '\\+')}(?=[:&]|$)`), family);
-  }
-  assert.match(href[1], /[?&]display=swap(&|$)/);
+  assert.ok(href, 'no https fonts.googleapis.com/css2 stylesheet link');
+  const params = new URL(href[1].replaceAll('&amp;', '&')).searchParams;
+  assert.deepEqual(
+    params.getAll('family').sort(),
+    ['JetBrains Mono:wght@400', 'Montserrat:wght@400;500;600;700', 'Roboto Serif:wght@400;600;700'],
+  );
+  assert.equal(params.get('display'), 'swap');
+  assert.doesNotMatch(href[1], /Pixelify|Inter\b/);
   assert.match(template, /<link\s+rel="preconnect"\s+href="https:\/\/fonts\.googleapis\.com"\s*\/?>/);
   assert.match(template, /<link\s+rel="preconnect"\s+href="https:\/\/fonts\.gstatic\.com"\s+crossorigin\b/);
 });
