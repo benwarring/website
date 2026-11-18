@@ -1,0 +1,918 @@
+/*
+ * Global stylesheet for the whole site (imported once by Base.astro).
+ * Dark mode only. Fonts are loaded by Base.astro, not here.
+ * Rule: --accent is never a text color; it is for borders, fills,
+ * dividers, link underlines, and focus rings.
+ */
+
+:root {
+  color-scheme: dark;
+
+  --bg: #0e0e13;
+  --surface: #17171f;
+  --line: #2b2b38;
+  --text-heading: #f2f0f5;
+  --text: #d9d6de;
+  --text-muted: #a9a5b3;
+  --accent: #7844b8;
+  --accent-light: #a987d6; /* hover outline */
+  --accent-dark: #5a3390; /* folder back panel */
+  /* Project paper: light sheet, dark ink. */
+  --paper: #ece9f1;
+  --paper-fold: #cfc9d8;
+  --ink: #17171f;
+  --ink-muted: #5d5868;
+
+  --font-heading: "Roboto Serif", Georgia, serif;
+  --font-body: "Montserrat", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* --page is the layout width; --measure is the widest a paragraph gets;
+     --narrow caps the hero text, the folder row and the home page paper. */
+  --page: 72rem;
+  --measure: 68ch;
+  --narrow: 44rem;
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 2rem;
+  --space-5: 4rem;
+  --space-6: 6rem;
+
+  --border: 2px;
+  --underline-hover: 4px;
+  --speed: 0.15s;
+  /* Folder flap and sheet motion; Home.jsx times the paper morph
+     against this duration. */
+  --fold-speed: 0.35s;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Where sticky section headings stop: below the top nav when it shows. */
+  --sticky-top: 5.5rem;
+  /* One corner radius for every box (buttons, tags, folders, paper).
+     About 15% of a button's height; a % radius would stretch
+     differently on each box's width. */
+  --radius: 0.5rem;
+}
+
+/* Base elements */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Keeps anchor targets clear of the sticky nav. */
+  scroll-padding-top: var(--space-5);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  /* Long URLs and words must not cause horizontal scroll at 320px.
+     "anywhere" (unlike break-word) also lowers min-content width, so
+     a long word can't widen a grid or flex child past the viewport. */
+  overflow-wrap: anywhere;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--text-heading);
+  font-family: var(--font-heading);
+  line-height: 1.2;
+}
+
+a {
+  color: var(--text-heading);
+  text-decoration: underline var(--accent) var(--border);
+  text-underline-offset: 0.2em;
+  transition: text-decoration-thickness var(--speed);
+}
+
+a:hover {
+  text-decoration-thickness: var(--underline-hover);
+}
+
+:focus-visible {
+  outline: var(--border) solid var(--accent);
+  /* Double the border width so the ring clears a button's own border. */
+  outline-offset: calc(2 * var(--border));
+}
+
+hr {
+  border: 0;
+  border-top: var(--border) solid var(--accent);
+  margin-block: var(--space-4);
+}
+
+code,
+pre,
+.mono {
+  font-family: var(--font-mono);
+}
+
+pre {
+  overflow-x: auto;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Layout */
+
+.skip-link {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 20;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  transform: translateY(-300%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+.container {
+  max-width: var(--page);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+
+/* Wrapping rows. */
+.site-nav-inner,
+.site-nav ul,
+.button-row,
+.tags,
+.site-footer-inner,
+.page-links,
+.paper-links {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.site-nav-inner {
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding-block: var(--space-3);
+}
+
+.site-nav ul {
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-nav a {
+  font-family: var(--font-heading);
+  text-decoration-color: transparent;
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  text-decoration-color: var(--accent);
+}
+
+/* The name at the left of the nav, with a small accent square as its mark. */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.brand::before {
+  content: "";
+  width: 0.7em;
+  height: 0.7em;
+  background: var(--accent);
+}
+
+.site-footer {
+  border-top: 1px solid var(--line);
+  padding-block: var(--space-4);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.site-footer-inner {
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+/* Hero */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated threads behind the whole hero; dimmed on small screens,
+   where they cross the text. */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.45;
+}
+
+.hero-inner {
+  position: relative;
+  display: grid;
+  /* minmax(0, ...) stops a wide child (the name) from
+     stretching the column past the viewport on phones. */
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  min-height: min(80vh, 46rem);
+  padding-block: var(--space-5);
+}
+
+.eyebrow,
+.section-index,
+.timeline-meta,
+.label {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+.eyebrow,
+.label {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-3);
+}
+
+.hero-name {
+  margin: 0;
+  font-size: clamp(2.75rem, 7.5vw, 5.75rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.hero-tagline {
+  max-width: 34ch;
+  margin: var(--space-3) 0 var(--space-4);
+  font-size: clamp(1.125rem, 2.2vw, 1.5rem);
+}
+
+/* Page header: the top of the projects page and of each project page.
+   A short hero (no min-height) with a hairline below, like the section
+   dividers. Children are spaced by the grid gap, not their margins. */
+
+.page-header {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  padding-block: var(--space-5) var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.page-header > * {
+  margin: 0;
+}
+
+.page-header h1 {
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.page-body {
+  padding-block: var(--space-5);
+}
+
+.page-links,
+.paper-links {
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+}
+
+/* Sections: heading in a left rail, content on the right. */
+
+.section {
+  display: grid;
+  gap: var(--space-4);
+  padding-block: var(--space-5);
+  border-top: 1px solid var(--line);
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 1.625rem;
+}
+
+.section-index {
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.section-body > :first-child {
+  margin-top: 0;
+}
+
+.section-body > :last-child {
+  margin-bottom: 0;
+}
+
+.lead {
+  max-width: var(--measure);
+  font-size: 1.1875rem;
+  line-height: 1.75;
+}
+
+.split {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.label {
+  margin: 0 0 var(--space-3);
+  font-weight: 400;
+}
+
+/* Buttons: a --surface box with an accent border that lightens on
+   hover. No drop shadows. */
+
+.button-row {
+  gap: var(--space-3);
+}
+
+.button {
+  display: inline-block;
+  padding: 0.7rem 1.25rem;
+  border: var(--border) solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-heading);
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color var(--speed);
+}
+
+.button:hover,
+.button:focus-visible {
+  border-color: var(--accent-light);
+}
+
+/* List resets. */
+.folders,
+.tags,
+.timeline,
+.paper-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Projects: a row of folders. A project folder is a button; when
+   aria-expanded its front flap tilts forward and its sheet rises, and
+   its .paper below is shown. The last folder links to /projects/. */
+.folders {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+  max-width: var(--narrow);
+  margin-bottom: var(--space-4);
+}
+
+.folder {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-1);
+  border: 0;
+  background: none;
+  color: var(--text-heading);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.folder-icon {
+  position: relative;
+  width: min(100%, 7rem);
+  aspect-ratio: 5 / 4;
+  /* Short perspective so the flap's tilt reads clearly at icon size. */
+  perspective: 12rem;
+}
+
+/* Back panel (::before) and its tab on the top left (::after).
+   Layer order, back to front: panel and tab (0), sheet (1), flap (2).
+   Without it ::after would paint over the sheet, hiding its left side. */
+.folder-icon::before,
+.folder-icon::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  background: var(--accent-dark);
+}
+
+.folder-icon::before {
+  inset: 10% 0 0;
+  border-radius: var(--radius);
+}
+
+.folder-icon::after {
+  top: 0;
+  left: 0;
+  width: 42%;
+  height: 20%;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+/* Half the shared radius: the sheet is a small box inside the icon. */
+.folder-sheet {
+  position: absolute;
+  z-index: 1;
+  inset: 20% 10% 12%;
+  border-radius: calc(var(--radius) / 2);
+  background: var(--paper);
+  transition: transform var(--fold-speed) var(--ease-out);
+}
+
+/* Hinged at its bottom edge; a negative rotateX tips the top toward
+   the viewer, uncovering the sheet. */
+.folder-front {
+  position: absolute;
+  z-index: 2;
+  inset: 32% 0 0;
+  border-radius: var(--radius);
+  background: var(--accent);
+  transform-origin: bottom;
+  transition: transform var(--fold-speed) var(--ease-out), background-color var(--speed);
+}
+
+.folder:hover .folder-sheet {
+  transform: translateY(-10%);
+}
+
+.folder:hover .folder-front,
+.folder:focus-visible .folder-front {
+  background: var(--accent-light);
+}
+
+/* An open folder pulls its sheet up until it clears the tipped flap,
+   so the morph into the paper starts above the flap, not through it. */
+.folder[aria-expanded="true"] .folder-sheet {
+  transform: translateY(-60%);
+}
+
+.folder[aria-expanded="true"] .folder-front {
+  transform: rotateX(-50deg);
+}
+
+/* While its paper is shown below, the sheet is that paper. */
+.folder-sheet[data-out] {
+  visibility: hidden;
+}
+
+.folder-label {
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  /* Body's overflow-wrap: anywhere would split "DocuGen" on phones. */
+  overflow-wrap: normal;
+}
+
+/* Smart-animate between the raised sheet and the paper: both get the
+   name "paper" (the sheet only while it is flying; see toggleFolder in
+   Home.jsx), and the browser morphs the old box into the new one. The
+   rest of the page swaps instantly instead of cross-fading.
+   Only the home page papers (the siblings after the folder row) take
+   the name: view-transition names must be unique on the page, and the
+   projects page shows many papers at once. */
+.folder-sheet[data-flying],
+.folders ~ .paper:not([hidden]) {
+  view-transition-name: paper;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-group(paper),
+::view-transition-old(paper),
+::view-transition-new(paper) {
+  animation-duration: 0.45s;
+  animation-timing-function: var(--ease-out);
+}
+
+/* Both snapshots fill the morphing box, so the small sheet stretches
+   into the paper rather than keeping its own aspect ratio. */
+::view-transition-old(paper),
+::view-transition-new(paper) {
+  height: 100%;
+}
+
+/* A project's description: dark ink on a light sheet with a folded
+   top-right corner. Text colors are re-set for the light background
+   (the global ones are for the dark page). */
+.paper {
+  --fold-size: 2rem;
+
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  max-width: var(--narrow);
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  clip-path: polygon(0 0, calc(100% - var(--fold-size)) 0, 100% var(--fold-size), 100% 100%, 0 100%);
+}
+
+/* display: grid above would otherwise override the hidden attribute. */
+.paper[hidden] {
+  display: none;
+}
+
+/* The fold: a darker triangle filling the clipped corner. */
+.paper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--fold-size);
+  height: var(--fold-size);
+  background: var(--paper-fold);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+
+.paper h3,
+.paper p {
+  margin: 0;
+}
+
+.paper h3 {
+  color: var(--ink);
+  font-size: 1.5rem;
+}
+
+.paper a {
+  color: var(--ink);
+}
+
+.paper .label {
+  color: var(--ink-muted);
+}
+
+/* Projects page: every project as a paper in a responsive grid. min()
+   lets a column shrink below 20rem on phones instead of overflowing. */
+.paper-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  gap: var(--space-4);
+}
+
+/* A grid cell, so its paper stretches to the row's height. */
+.paper-list > li {
+  display: grid;
+}
+
+/* Flex, not grid, so margin-top: auto can push the links row to the
+   bottom of a stretched paper. */
+.paper-list .paper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: none;
+}
+
+.paper-list .paper-links {
+  margin-top: auto;
+}
+
+.tags {
+  gap: var(--space-2);
+}
+
+.tag {
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text-heading);
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+}
+
+/* Contact: one row per address, label in a narrow column on wide
+   screens, hairlines between rows like the section dividers. */
+.contact-list {
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.contact-list li {
+  display: grid;
+  gap: var(--space-1) var(--space-4);
+  align-items: baseline;
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.contact-list .label {
+  margin: 0;
+}
+
+.contact-list a {
+  font-family: var(--font-heading);
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+/* Timeline: a line with a square block marking each entry. */
+
+.timeline {
+  display: grid;
+  gap: var(--space-4);
+  border-left: var(--border) solid var(--line);
+}
+
+.timeline-item {
+  position: relative;
+  display: grid;
+  gap: var(--space-2) var(--space-4);
+  padding-left: var(--space-4);
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  /* Centres the 10px block on the 2px line. */
+  left: -6px;
+  top: 0.4rem;
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+}
+
+.timeline-item h3,
+.timeline-item p {
+  margin: 0;
+}
+
+.timeline-item h3 {
+  font-size: 1.125rem;
+}
+
+.timeline-body {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.timeline-body > p:last-child {
+  max-width: var(--measure);
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.plain-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  list-style: square;
+}
+
+.plain-list li + li {
+  margin-top: var(--space-2);
+}
+
+/* The light accent: a marker is drawn as text, and --accent is never
+   a text color. */
+.plain-list ::marker {
+  color: var(--accent-light);
+}
+
+/* Project pages: rendered Markdown on the dark page (not on paper). */
+
+.prose {
+  max-width: var(--measure);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose :is(h2, h3) {
+  margin-block: var(--space-5) var(--space-3);
+}
+
+.prose h2 {
+  font-size: 1.625rem;
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+}
+
+.prose :is(p, ul, ol, pre, img) {
+  margin-block: 0 var(--space-3);
+}
+
+.prose :is(ul, ol) {
+  padding-left: 1.25rem;
+}
+
+.prose li + li {
+  margin-top: var(--space-1);
+}
+
+.prose pre {
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.prose :not(pre) > code {
+  padding: 0 var(--space-1);
+  border-radius: calc(var(--radius) / 2);
+  background: var(--surface);
+  font-size: 0.9em;
+}
+
+.prose img {
+  display: block;
+}
+
+.back-link {
+  display: inline-block;
+  margin-block: var(--space-4);
+}
+
+/* Wide screens */
+
+@media (min-width: 40rem) {
+  .split {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .timeline-item {
+    grid-template-columns: 10rem minmax(0, 1fr);
+  }
+
+  .contact-list li {
+    grid-template-columns: 8rem 1fr;
+  }
+}
+
+/* These depend on the width of the main column, not the viewport,
+   because the sidebar takes part of the viewport on wide screens. */
+@container main (min-width: 56rem) {
+  .hero-bg {
+    opacity: 1;
+  }
+
+  .hero-inner > * {
+    max-width: var(--narrow);
+  }
+
+  .section {
+    grid-template-columns: 12rem minmax(0, 1fr);
+    gap: var(--space-5);
+    padding-block: var(--space-6);
+  }
+
+  .section-head {
+    position: sticky;
+    top: var(--sticky-top);
+    align-self: start;
+  }
+
+  .page-header {
+    padding-block: var(--space-6) var(--space-5);
+  }
+}
+
+/* Sidebar: replaces the top nav on wide screens. */
+
+.page-main {
+  container: main / inline-size;
+}
+
+.sidebar {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --sticky-top: var(--space-4);
+  }
+
+  html {
+    scroll-padding-top: var(--space-4);
+  }
+
+  .site-nav {
+    display: none;
+  }
+
+  .page {
+    display: grid;
+    grid-template-columns: 14rem minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    height: 100vh;
+    padding: var(--space-4) var(--space-3);
+    font-size: 0.875rem;
+    overflow-y: auto;
+    border-right: 1px solid var(--line);
+  }
+
+  .sidebar .brand {
+    font-size: 1rem;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+}
+
+.sidebar-links {
+  display: grid;
+  gap: var(--space-2);
+  margin: auto 0 0;
+  padding: var(--space-3) 0 0;
+  border-top: 1px solid var(--line);
+  font-size: 0.875rem;
+  list-style: none;
+}
+
+/* React Bits BranchedMenu: heading-font section heads, an off-white
+   active label (the accent is for its lines only), a solid rail instead
+   of a gradient, and the focus ring its own stylesheet removes. */
+.sidebar .branched-menu__head {
+  font-family: var(--font-heading);
+}
+
+.sidebar .branched-menu__item[data-active] {
+  color: var(--text-heading);
+}
+
+.sidebar .branched-menu::before {
+  background: var(--line);
+}
+
+.sidebar :is(.branched-menu__head, .branched-menu__item):focus-visible {
+  outline: var(--border) solid var(--accent);
+  outline-offset: var(--border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  a,
+  .button,
+  .folder-sheet,
+  .folder-front {
+    transition: none;
+  }
+
+  /* Home.jsx already skips the morph under reduced motion; this stops
+     it too if a view transition starts anyway. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
+}

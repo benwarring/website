@@ -1,2 +1,5 @@
 .secret/
 .pipeline/
+node_modules/
+dist/
+.astro/

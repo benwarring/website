@@ -1,0 +1,21 @@
+---
+/**
+ * Home route. Loads the projects (sorted by `order`) through the shared
+ * loader and hands plain objects to the Home page component inside the
+ * Base shell.
+ */
+import Base from '../layouts/Base.astro';
+import Home from '../components/Home.jsx';
+import { NAME } from '../components/Site.jsx';
+import { getSortedProjects, toProjectProps } from '../lib/projects';
+
+const projects = (await getSortedProjects()).map(toProjectProps);
+---
+
+<Base
+  title={NAME}
+  description="Benjamin Warring is a Computer Science student at Bucknell University. Projects, experience and contact details."
+>
+  {/* Hydrated because SiteShell's sidebar menu and the home page's folders are interactive React. */}
+  <Home client:load projects={projects} />
+</Base>

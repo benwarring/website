@@ -1,0 +1,21 @@
+---
+/**
+ * All-projects route (`/website/projects/`). Loads the projects collection,
+ * sorted by `order`, and hands plain objects to the ProjectsIndex page
+ * component inside the Base shell.
+ */
+import Base from '../../layouts/Base.astro';
+import ProjectsIndex from '../../components/ProjectsIndex.jsx';
+import { NAME } from '../../components/Site.jsx';
+import { getSortedProjects, toProjectProps } from '../../lib/projects';
+
+const projects = (await getSortedProjects()).map(toProjectProps);
+---
+
+<Base
+  title={`Projects · ${NAME}`}
+  description={`Projects by ${NAME}, a Computer Science student at Bucknell University.`}
+>
+  {/* Hydrated because SiteShell's sidebar menu (BranchedMenu) is interactive React. */}
+  <ProjectsIndex client:load projects={projects} />
+</Base>

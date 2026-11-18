@@ -1,0 +1,40 @@
+---
+/**
+ * Project detail route: one static page per projects collection entry at
+ * `/website/projects/<id>/`. Renders the entry's Markdown and hands plain
+ * objects to the ProjectDetail page component inside the Base shell.
+ */
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ProjectDetail from '../../components/ProjectDetail.jsx';
+import { NAME } from '../../components/Site.jsx';
+import { getSortedProjects, toProjectProps, type ProjectProps } from '../../lib/projects';
+
+interface Props {
+  entry: CollectionEntry<'projects'>;
+  projects: ProjectProps[];
+}
+
+/**
+ * Builds one path per project. The collection is fetched once here and the
+ * sorted menu list is passed to every page as a prop, so the page body does
+ * not fetch it again.
+ *
+ * @returns One `{ params: { slug }, props }` per project entry.
+ * @throws Whatever `getSortedProjects` throws if the collection fails to load.
+ */
+export async function getStaticPaths(): Promise<{ params: { slug: string }; props: Props }[]> {
+  const entries = await getSortedProjects();
+  const projects = entries.map(toProjectProps);
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry, projects } }));
+}
+
+const { entry, projects } = Astro.props;
+const { Content } = await render(entry);
+const project = toProjectProps(entry);
+---
+
+<Base title={`${project.title} · ${NAME}`} description={project.summary}>
+  {/* Hydrated to match the home page, so React Bits components (the sidebar BranchedMenu) stay interactive. */}
+  <ProjectDetail client:load project={project} projects={projects}><Content /></ProjectDetail>
+</Base>
