@@ -8,8 +8,7 @@ import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
-import { Children, createElement, isValidElement } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { loadReact, reactShim } from './helpers/react.js';
 
 const projectRoot = fileURLToPath(new URL('..', import.meta.url));
 const BASE = '/website/';
@@ -18,9 +17,11 @@ const PROJECTS = [
   { id: 'alpha-editor', title: 'Alpha Editor' },
   { id: 'beta-pipeline', title: 'Beta Pipeline' },
 ];
-const CHILD = createElement('p', { id: 'page-content' }, 'Page body');
+let CHILD; // sample page content element, built in before() once React is loaded
 
 let server;
+// Set in before() from loadReact(server); see tests/helpers/react.js.
+let Children, createElement, isValidElement, renderToStaticMarkup;
 let site;
 let BranchedMenu;
 let html;
@@ -33,7 +34,10 @@ before(async () => {
     server: { middlewareMode: true, hmr: false, ws: false },
     appType: 'custom',
     logLevel: 'silent',
+    plugins: [reactShim],
   });
+  ({ Children, createElement, isValidElement, renderToStaticMarkup } = await loadReact(server));
+  CHILD = createElement('p', { id: 'page-content' }, 'Page body');
   site = await server.ssrLoadModule('/src/components/Site.jsx');
   BranchedMenu = (await server.ssrLoadModule('/src/components/reactbits/BranchedMenu.jsx')).default;
   html = renderShell();

@@ -7,8 +7,7 @@ import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
-import { createElement } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { loadReact, reactShim } from './helpers/react.js';
 
 const projectRoot = fileURLToPath(new URL('..', import.meta.url));
 const BASE = '/website/';
@@ -36,6 +35,8 @@ const PROJECTS = [
 ];
 
 let server;
+// Set in before() from loadReact(server); see tests/helpers/react.js.
+let createElement, renderToStaticMarkup;
 let ProjectsIndex;
 let html;
 
@@ -47,7 +48,9 @@ before(async () => {
     server: { middlewareMode: true, hmr: false, ws: false },
     appType: 'custom',
     logLevel: 'silent',
+    plugins: [reactShim],
   });
+  ({ createElement, renderToStaticMarkup } = await loadReact(server));
   ProjectsIndex = (await server.ssrLoadModule('/src/components/ProjectsIndex.jsx')).default;
   html = render(PROJECTS);
 });

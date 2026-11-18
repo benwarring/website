@@ -12,8 +12,7 @@ import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
-import { Children, createElement, isValidElement } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { loadReact, reactShim } from './helpers/react.js';
 
 const projectRoot = fileURLToPath(new URL('..', import.meta.url));
 const BASE = '/website/';
@@ -62,6 +61,8 @@ export function useEffect(effect, deps) {
 `;
 
 let server;
+// Set in before() from loadReact(server); see tests/helpers/react.js.
+let Children, createElement, isValidElement, renderToStaticMarkup;
 let Home;
 let html;
 
@@ -74,6 +75,7 @@ before(async () => {
     appType: 'custom',
     logLevel: 'silent',
     plugins: [
+      reactShim,
       {
         name: 'home-test-hooks',
         enforce: 'pre',
@@ -92,6 +94,7 @@ before(async () => {
       },
     ],
   });
+  ({ Children, createElement, isValidElement, renderToStaticMarkup } = await loadReact(server));
   const mod = await server.ssrLoadModule('/src/components/Home.jsx');
   Home = mod.default;
   html = renderToStaticMarkup(createElement(Home, { projects: PROJECTS }));

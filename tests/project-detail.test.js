@@ -6,8 +6,7 @@ import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
-import { createElement } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { loadReact, reactShim } from './helpers/react.js';
 
 const projectRoot = fileURLToPath(new URL('..', import.meta.url));
 const PROJECTS = [
@@ -22,9 +21,11 @@ const PROJECT = {
   repo: 'https://github.com/example/beta-pipeline',
 };
 const { repo: _repo, ...PROJECT_NO_REPO } = PROJECT;
-const BODY = createElement('p', { id: 'body-content' }, 'Rendered markdown');
+let BODY; // sample Markdown body element, built in before() once React is loaded
 
 let server;
+// Set in before() from loadReact(server); see tests/helpers/react.js.
+let createElement, renderToStaticMarkup;
 let ProjectDetail;
 
 before(async () => {
@@ -35,7 +36,10 @@ before(async () => {
     server: { middlewareMode: true, hmr: false, ws: false },
     appType: 'custom',
     logLevel: 'silent',
+    plugins: [reactShim],
   });
+  ({ createElement, renderToStaticMarkup } = await loadReact(server));
+  BODY = createElement('p', { id: 'body-content' }, 'Rendered markdown');
   ProjectDetail = (await server.ssrLoadModule('/src/components/ProjectDetail.jsx')).default;
 });
 
