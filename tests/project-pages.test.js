@@ -57,6 +57,28 @@ function page(id) {
   return readFileSync(new URL(`${id}/index.html`, distProjects), 'utf8');
 }
 
+/** Decodes Astro's `[type, value]` island prop encoding (0 = plain/object, 1 = array). */
+function decodeProp([type, value]) {
+  if (type === 1) return value.map(decodeProp);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, decodeProp(v)]));
+  }
+  return value;
+}
+
+/** The decoded props of the page's ProjectDetail island. */
+function islandProps(html) {
+  const raw = html.match(/<astro-island\b[^>]*component-url="[^"]*\/ProjectDetail\.[^"]*"[^>]*\sprops="([^"]*)"/)[1];
+  const json = raw
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+  return decodeProp([0, JSON.parse(json)]);
+}
+
+/** Plain project fields as hydrated components receive them; JSON drops an absent repo. */
+function projectProps({ id, title, summary, tags, repo }) {
+  return JSON.parse(JSON.stringify({ id, title, summary, tags, repo }));
+}
+
 function header(html) {
   return html.match(/<header class="page-header container">([\s\S]*?)<\/header>/)?.[1] ?? '';
 }
@@ -136,6 +158,12 @@ for (const project of projects) {
     assert.deepEqual(projectLabels, byOrder.map((p) => escapeReact(p.title)));
     const current = [...html.matchAll(/aria-current="true"[^>]*>[\s\S]*?branched-menu__label">([^<]*)</g)];
     assert.deepEqual(current.map((m) => m[1]), [escapeReact(title)]);
+  });
+
+  test(`${id}: island receives this project and every project in order as full props`, () => {
+    const props = islandProps(page(id));
+    assert.deepEqual(JSON.parse(JSON.stringify(props.project)), projectProps(project));
+    assert.deepEqual(JSON.parse(JSON.stringify(props.projects)), byOrder.map(projectProps));
   });
 
   test(`${id}: every internal link keeps the /website/ base`, () => {
