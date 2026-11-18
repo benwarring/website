@@ -21,9 +21,9 @@ test('the Base shell wraps the page', () => {
 });
 
 test('the global stylesheet reaches the page', () => {
-  const linked = /<link rel="stylesheet" href="\/website\/[^"]+\.css"/.test(html);
+  const linked = /<link rel="stylesheet" href="\/[^"]+\.css"/.test(html);
   const inlined = /<style>[^<]*--accent:/.test(html);
-  assert.ok(linked || inlined, 'no /website/ stylesheet link and no inlined global CSS');
+  assert.ok(linked || inlined, 'no stylesheet link and no inlined global CSS');
 });
 
 test('folders show exactly the first three projects by order, then More', () => {
@@ -32,7 +32,7 @@ test('folders show exactly the first three projects by order, then More', () => 
   assert.deepEqual(labels, ['bIDE', 'ReGen', 'DocuGen', 'More']);
   const controls = [...folders.matchAll(/<button[^>]*aria-controls="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(controls, ['paper-bide', 'paper-regen', 'paper-docugen']);
-  assert.match(folders, /<a class="folder" href="\/website\/projects\/">/);
+  assert.match(folders, /<a class="folder" href="\/projects\/">/);
 });
 
 test('each featured paper links to its project page; no other project is featured', () => {
@@ -40,7 +40,7 @@ test('each featured paper links to its project page; no other project is feature
   assert.deepEqual(papers.map((m) => m[1]), ['bide', 'regen', 'docugen']);
   for (const [paper, id] of papers) {
     // Hydratable output separates adjacent text nodes with <!-- -->.
-    assert.match(paper, new RegExp(`<a href="/website/projects/${id}/">Read more about (?:<!-- -->)?[^<]+</a>`));
+    assert.match(paper, new RegExp(`<a href="/projects/${id}/">Read more about (?:<!-- -->)?[^<]+</a>`));
   }
 });
 
@@ -58,8 +58,8 @@ test('only plain project fields are serialized', () => {
   assert.ok(!html.includes('src/content/projects'), 'file path leaked into the page');
 });
 
-test('every root-relative URL starts with the /website/ base', () => {
+test('root-relative URLs are site-root paths, with no leftover /website/ prefix', () => {
   const urls = [...html.matchAll(/\s(?:href|src|component-url|renderer-url)="(\/[^"]*)"/g)].map((m) => m[1]);
   assert.ok(urls.length > 0, 'no root-relative URLs found');
-  assert.deepEqual(urls.filter((url) => !url.startsWith('/website/')), []);
+  assert.deepEqual(urls.filter((url) => url.startsWith('/website/')), []);
 });

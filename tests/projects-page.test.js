@@ -1,6 +1,6 @@
 // Checks the built all-projects page (dist/projects/index.html) against the
 // projects collection: metadata, one paper per entry in `order`, hydration,
-// the highlighted menu entry and the /website/ base path.
+// the highlighted menu entry and site-root URLs.
 // It reads the build output and never builds; `npm test` builds first.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -88,7 +88,7 @@ test('each paper shows its frontmatter title, summary and tags', () => {
 test('each paper links to its detail page and, when it has one, its repo', () => {
   papers.forEach((paper, i) => {
     const entry = expected[i];
-    const links = [[`/website/projects/${entry.id}/`, `Read more about ${entry.title}`]];
+    const links = [[`/projects/${entry.id}/`, `Read more about ${entry.title}`]];
     if (entry.repo) links.push([entry.repo, `View ${entry.title} on GitHub`]);
     assert.deepEqual(paper.links, links);
   });
@@ -98,7 +98,7 @@ test('the ProjectsIndex component is hydrated on load', () => {
   const island = html.match(/<astro-island\b[^>]*>/)?.[0];
   assert.ok(island, 'no astro-island');
   assert.match(island, /\sclient="load"/);
-  assert.match(island, /\scomponent-url="\/website\/_astro\/ProjectsIndex\.[^"]+\.js"/);
+  assert.match(island, /\scomponent-url="\/_astro\/ProjectsIndex\.[^"]+\.js"/);
 });
 
 test('only plain project fields are serialized', () => {
@@ -112,8 +112,8 @@ test('the sidebar highlights "All projects" and nothing else', () => {
   assert.match(current[0][1], /<span class="branched-menu__label">All projects<\/span>/);
 });
 
-test('every root-relative URL starts with the /website/ base', () => {
+test('root-relative URLs are site-root paths, with no leftover /website/ prefix', () => {
   const urls = [...html.matchAll(/\s(?:href|src|component-url|renderer-url)="(\/[^"]*)"/g)].map((m) => m[1]);
   assert.ok(urls.length > 0, 'no root-relative URLs found');
-  assert.deepEqual(urls.filter((url) => !url.startsWith('/website/')), []);
+  assert.deepEqual(urls.filter((url) => url.startsWith('/website/')), []);
 });

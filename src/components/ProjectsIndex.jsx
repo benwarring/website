@@ -1,5 +1,5 @@
 /**
- * All-projects page content (`/website/projects/`): a page header and a
+ * All-projects page content (`/projects/`): a page header and a
  * grid of project papers inside the shared site frame. Rendered to static
  * HTML and hydrated, so render must be pure: no randomness, dates or
  * browser globals.
