@@ -1,6 +1,6 @@
 /**
  * Project detail page: the content of one project's page at
- * `/projects/<id>/`, inside the shared SiteShell frame.
+ * `/website/projects/<id>/`, inside the shared SiteShell frame.
  * Rendered to static HTML and hydrated, so render must be pure: no state,
  * effects, randomness, dates or browser globals.
  */
