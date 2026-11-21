@@ -33,11 +33,18 @@ const FEATURED_COUNT = 3;
 
 const EXPERIENCE = [
   {
+    role: 'ClearPATH Coop Java Software Engineering',
+    organisation: 'Raytheon',
+    dates: 'Aug 2026 - Present',
+    description:
+      'Completing role based trainings, getting familiar with the company, waiting for clearance'
+  },
+  {
     role: 'Teaching Assistant (Lab TA / Grader)',
     organisation: 'Bucknell University',
     dates: 'Jan 2026 – Present',
     description:
-      'Guided 20+ students in debugging and problem solving across multiple programming languages.',
+      'Guided 50+ students in debugging and problem solving across multiple programming languages.',
   },
   {
     role: 'Peer Tutor / Study Group Facilitator / Mentor',
